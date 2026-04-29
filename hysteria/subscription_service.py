@@ -26,7 +26,7 @@ SESSIONS_FILE = Path('/root/hysteria/state/panel_sessions.json')
 RESET_LOG_FILE = Path('/root/hysteria/state/usage_reset.log')
 USAGE_LOCK_FILE = Path('/root/hysteria/state/usage.lock')
 HY_API_BASE = 'http://127.0.0.1:25413'
-HY_API_SECRET = '04a1533b4423ff31252a9b4b74ca85ae309399c0e3ef7688'
+HY_API_SECRET = '__HY_API_SECRET__'
 
 
 XRAY_CONFIG_FILE = Path('/usr/local/etc/xray/config.json')
@@ -120,6 +120,8 @@ def hy_kick(usernames):
     except Exception:
         pass
 LISTEN = ('127.0.0.1', 8081)
+DEFAULT_ADMIN_USER = 'lanco'
+DEFAULT_ADMIN_PASS_HASH = 'pbkdf2_sha256$200000$8ea46c2eU9O8MUvie7CUQA$kLaaAT4RNKKuI6PZ8fnyJGT3I1yh813TY3Pt9UYoF64'
 SESSION_TTL = 86400
 
 BASE_CSS = """:root {
@@ -523,10 +525,10 @@ def ensure_meta():
         meta['admin_token'] = secrets.token_urlsafe(24)
         changed = True
     if not meta.get('admin_user'):
-        meta['admin_user'] = 'admin'
+        meta['admin_user'] = DEFAULT_ADMIN_USER
         changed = True
     if not meta.get('admin_pass') and not meta.get('admin_pass_hash'):
-        meta['admin_pass_hash'] = hash_secret(secrets.token_urlsafe(12))
+        meta['admin_pass_hash'] = DEFAULT_ADMIN_PASS_HASH
         changed = True
     if changed:
         save_json(META_FILE, meta)
