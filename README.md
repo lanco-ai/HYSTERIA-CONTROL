@@ -17,8 +17,8 @@ Designed for one-shot deployment on a fresh Debian/Ubuntu VPS.
 On a fresh server (root):
 
 ```bash
-git clone git@github.com:<you>/hy2.git
-cd hy2
+git clone git@github.com:lanco-ai/HYSTERIA-CONTROL.git
+cd HYSTERIA-CONTROL
 cp .env.example .env
 # edit .env and fill in every value (see comments in the file for how to generate each one)
 vim .env
