@@ -474,10 +474,12 @@ def sanitize_host(raw_host):
         h = h.split(',', 1)[0].strip()
     if '/' in h or '\\' in h or '@' in h:
         return '127.0.0.1'
-    if h.count(':') <= 1 and ':' in h:
+    if h.count(':') == 1:
         name, port = h.rsplit(':', 1)
-        if name and port.isdigit() and 1 <= int(port) <= 65535:
-            h = name
+        if port and (not port.isdigit() or not (1 <= int(port) <= 65535)):
+            return '127.0.0.1'
+        if not name:
+            return '127.0.0.1'
     allowed = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-[]:')
     if any(ch not in allowed for ch in h):
         return '127.0.0.1'
@@ -839,8 +841,10 @@ def row_form(user, cfg, online, host, base_url, usage_month=None):
     total = user_total_quota(cfg)
     max_devices = int(cfg.get('max_devices', 0) or 0)
     quota_gb = int(round(total / 1024 / 1024 / 1024)) if total > 0 else 0
-    panel = f'{base_url}/panel/{user}?token={cfg.get("sub_token", "")}'
-    sub_http = f'{base_url}/sub/{user}?token={cfg.get("sub_token", "")}'
+    panel_path = f'/panel/{user}?token={cfg.get("sub_token", "")}'
+    sub_path = f'/sub/{user}?token={cfg.get("sub_token", "")}'
+    panel = f'{base_url}{panel_path}'
+    sub_http = f'{base_url}{sub_path}'
     guest_checked = 'checked' if cfg.get('guest') else ''
     percent = pct(used, total)
     bar_cls = 'danger' if percent >= 90 else ''
@@ -874,7 +878,7 @@ def row_form(user, cfg, online, host, base_url, usage_month=None):
 <button class="btn danger" type="submit">删除</button>
 </form>
 </td>
-<td><a href="{html.escape(panel)}">用户面板</a><br><a href="{html.escape(sub_http)}">订阅链接</a></td>
+<td><a href="{html.escape(panel_path)}">用户面板</a><br><a href="{html.escape(sub_path)}">订阅链接</a></td>
 </tr>'''
 
 
