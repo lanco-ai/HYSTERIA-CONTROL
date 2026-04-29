@@ -1,0 +1,71 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Certificates / private keys
+*.key
+*.crt
+*.pem
+*.csr
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# Runtime data
+users.json
+users.yaml
+subscription_meta.json
+state/
+data/
+runtime/
+tmp/
+temp/
+*.pid
+*.sock
+
+# Generated configs containing real secrets
+config.yaml
+config.yml
+server.yaml
+server.yml
+client.yaml
+client.yml
+config.json
+*.json.bak
+*.yaml.bak
+*.yml.bak
+
+# Logs / backups
+*.log
+logs/
+nohup.out
+*.bak
+*.bak-*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Node / frontend artifacts
+node_modules/
+dist/
+build/
+.cache/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
