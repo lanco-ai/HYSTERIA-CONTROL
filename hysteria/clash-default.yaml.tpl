@@ -248,7 +248,7 @@ rules:
   - 'GEOIP,LAN,DIRECT'
 
   - 'RULE-SET,icloud,DIRECT'
-  - 'RULE-SET,apple,DIRECT'
+  - 'RULE-SET,apple,🚀 节点选择'
   - 'RULE-SET,direct,DIRECT'
   - 'RULE-SET,proxy,🚀 节点选择'
   - 'RULE-SET,telegramcidr,🚀 节点选择,no-resolve'
