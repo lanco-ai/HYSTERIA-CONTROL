@@ -4,10 +4,10 @@ allow-lan: true
 bind-address: '*'
 mode: rule
 log-level: info
-external-controller: 127.0.0.1:9090
+external-controller: '127.0.0.1:9090'
 unified-delay: true
 
-# 2. DNS 配置 (fake-ip 模式)
+# 2. DNS 配置
 dns:
   enable: true
   ipv6: false
@@ -41,6 +41,17 @@ dns:
       - 223.5.5.5
       - 119.29.29.29
 
+  fake-ip-filter:
+    - '*.lan'
+    - localhost.ptlogin2.qq.com
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - 'time.*.com'
+    - 'time.*.gov'
+    - 'time.*.edu.cn'
+    - '*.ntp.org.cn'
+    - '*.pool.ntp.org'
+
   fallback-filter:
     geoip: true
     geoip-code: CN
@@ -48,26 +59,27 @@ dns:
       - 240.0.0.0/4
       - 0.0.0.0/32
 
-# 3. 节点 (password 和 uuid 由 subscription_service.py 在下发订阅时按用户注入)
+# 3. 代理节点
+# password 和 uuid 会由 subscription_service.py 在下发订阅时按用户自动注入。
 proxies:
-  - name: 🇺🇸 美国 UDP (端口跳跃)
+  - name: '🇺🇸 美国 UDP (端口跳跃)'
     type: hysteria2
     server: __HY_SERVER_HOST__
     port: 443
     ports: 20000-40000
-    password: PLACEHOLDER
+    password: USER_PLACEHOLDER:TOKEN_PLACEHOLDER
     obfs: salamander
     obfs-password: __HY_OBFS_PASSWORD__
     sni: hysteria2
     skip-cert-verify: true
     udp: true
-    up: 100 Mbps
-    down: 400 Mbps
+    up: "100 Mbps"
+    down: "400 Mbps"
     transport:
       type: udp
       hopInterval: 30s
 
-  - name: 🇺🇸 美国 TCP (VLESS+REALITY)
+  - name: '🇺🇸 美国 TCP (VLESS+REALITY)'
     type: vless
     server: __HY_SERVER_HOST__
     port: 443
@@ -83,7 +95,7 @@ proxies:
     client-fingerprint: chrome
     skip-cert-verify: true
 
-  - name: 🇺🇸 美国 TCP 备用 (VLESS+REALITY)
+  - name: '🇺🇸 美国 TCP 备用 (VLESS+REALITY)'
     type: vless
     server: __HY_SERVER_HOST__
     port: 8443
@@ -101,26 +113,26 @@ proxies:
 
 # 4. 策略组
 proxy-groups:
-  - name: 🚀 节点选择
+  - name: '🚀 节点选择'
     type: select
     proxies:
-      - 🔄 自动选择
-      - 🇺🇸 美国 UDP (端口跳跃)
-      - 🇺🇸 美国 TCP (VLESS+REALITY)
-      - 🇺🇸 美国 TCP 备用 (VLESS+REALITY)
+      - '🔄 自动选择'
+      - '🇺🇸 美国 UDP (端口跳跃)'
+      - '🇺🇸 美国 TCP (VLESS+REALITY)'
+      - '🇺🇸 美国 TCP 备用 (VLESS+REALITY)'
       - DIRECT
 
-  - name: 🔄 自动选择
+  - name: '🔄 自动选择'
     type: fallback
     proxies:
-      - 🇺🇸 美国 UDP (端口跳跃)
-      - 🇺🇸 美国 TCP (VLESS+REALITY)
-      - 🇺🇸 美国 TCP 备用 (VLESS+REALITY)
+      - '🇺🇸 美国 UDP (端口跳跃)'
+      - '🇺🇸 美国 TCP (VLESS+REALITY)'
+      - '🇺🇸 美国 TCP 备用 (VLESS+REALITY)'
     url: https://www.gstatic.com/generate_204
     interval: 30
     timeout: 5000
 
-# 5. 规则集（每天自动更新）
+# 5. 规则集
 rule-providers:
   private:
     type: http
@@ -185,37 +197,63 @@ rule-providers:
     path: ./ruleset/lancidr.yaml
     interval: 86400
 
-# 6. 规则
+# 6. 分流规则
 rules:
+  # Ubuntu / Linux 软件源直连
+  - 'DOMAIN-KEYWORD,ubuntu,DIRECT'
+
+  # Steam 下载与平台
   - 'DOMAIN-SUFFIX,steamcontent.com,DIRECT'
   - 'DOMAIN-SUFFIX,steamserver.net,DIRECT'
   - 'DOMAIN-SUFFIX,steampowered.com,🚀 节点选择'
+
+  # Google / Claude Code 下载依赖
   - 'DOMAIN-SUFFIX,googleapis.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,gstatic.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,googleusercontent.com,🚀 节点选择'
+
+  # 常见 CDN
   - 'DOMAIN-SUFFIX,cloudflare.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,cdnjs.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,jsdelivr.net,🚀 节点选择'
   - 'DOMAIN-SUFFIX,bootstrapcdn.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,fontawesome.com,🚀 节点选择'
   - 'DOMAIN-SUFFIX,fontawesomecdn.com,🚀 节点选择'
-  - 'RULE-SET,reject,REJECT'
-  - 'RULE-SET,private,DIRECT'
-  - 'RULE-SET,lancidr,DIRECT,no-resolve'
-  - 'GEOIP,LAN,DIRECT'
-  - 'DOMAIN-SUFFIX,rmbgame.net,DIRECT'
+
+  # DeepSeek / 国内模型 API，建议直连
+  - 'DOMAIN-SUFFIX,deepseek.com,DIRECT'
+  - 'DOMAIN-SUFFIX,deepseek.com.cn,DIRECT'
+  - 'DOMAIN-SUFFIX,volces.com,DIRECT'
+  - 'DOMAIN-SUFFIX,aliyuncs.com,DIRECT'
+
+  # Microsoft / Windows / VSCode 直连
   - 'DOMAIN-KEYWORD,Microsoft,DIRECT'
+  - 'DOMAIN-SUFFIX,microsoft.com,DIRECT'
   - 'DOMAIN-SUFFIX,office.com,DIRECT'
   - 'DOMAIN-SUFFIX,windows.com,DIRECT'
   - 'DOMAIN-SUFFIX,visualstudio.com,DIRECT'
   - 'DOMAIN-SUFFIX,vscode-cdn.net,DIRECT'
   - 'DOMAIN-KEYWORD,vscode,DIRECT'
+
+  # NVIDIA
   - 'DOMAIN-SUFFIX,nvidia.com,DIRECT'
+
+  # 其他指定直连
+  - 'DOMAIN-SUFFIX,rmbgame.net,DIRECT'
+
+  # 规则集
+  - 'RULE-SET,reject,REJECT'
+  - 'RULE-SET,private,DIRECT'
+  - 'RULE-SET,lancidr,DIRECT,no-resolve'
+  - 'GEOIP,LAN,DIRECT'
+
   - 'RULE-SET,icloud,DIRECT'
   - 'RULE-SET,apple,DIRECT'
   - 'RULE-SET,direct,DIRECT'
   - 'RULE-SET,proxy,🚀 节点选择'
   - 'RULE-SET,telegramcidr,🚀 节点选择,no-resolve'
   - 'RULE-SET,cncidr,DIRECT,no-resolve'
+
+  # 国内直连，其他默认走代理
   - 'GEOIP,CN,DIRECT'
   - 'MATCH,🚀 节点选择'
